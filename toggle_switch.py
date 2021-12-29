@@ -36,9 +36,9 @@ class ToggleSwitch:
         while True:
             pass
 
-    @staticmethod
-    def destroy():
-        # GPIO.output(led_pin, GPIO.LOW)
+    @classmethod
+    def destroy(cls):
+        GPIO.output(cls.led_pin, GPIO.LOW)
         GPIO.cleanup()
 
 
