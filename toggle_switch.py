@@ -13,6 +13,8 @@ import RPi.GPIO as GPIO
 class ToggleSwitch:
     led_pin = 11
     button_pin = 12
+    # current state of the LED
+    led_current_state = GPIO.LOW  # False means it is OFF
 
     @classmethod
     def initialize(cls):
@@ -21,13 +23,15 @@ class ToggleSwitch:
         GPIO.setup(cls.button_pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
     @classmethod
-    def deploy(cls):
-        # current state of the LED
-        led_current_state = GPIO.LOW  # False means it is OFF
+    def toggle_LED(cls):
+        cls.led_current_state = not cls.led_current_state
+        GPIO.output(cls.led_pin, cls.led_current_state)
 
+    @classmethod
+    def deploy(cls):
         # I know; 0 means ON, 1 means OFF (for the button)
-        led_states = ['\033[31mled turned OFF\033[0m', '\033[32mled turned ON\033[0m']
-        print(led_states[led_current_state])
+        led_states = ['\033[31mLED turned OFF\033[0m', '\033[32mLED turned ON\033[0m']
+        print("\033[34mLED is OFF, press the button to switch it ON\033[0m")
         still_pressed = False
         count = 1
         while True:
@@ -39,9 +43,8 @@ class ToggleSwitch:
                     time.sleep(0.05)
                     count += 1
                     continue
-                led_current_state = not led_current_state
-                GPIO.output(cls.led_pin, led_current_state)
-                print(led_states[led_current_state], count)
+                cls.toggle_LED()
+                print(led_states[cls.led_current_state], count)
                 count = 0
                 still_pressed = True
                 #
@@ -56,9 +59,7 @@ class ToggleSwitch:
 
 if __name__ == '__main__':
     ToggleSwitch.initialize()
-
     print('System ready')
-    print('Please press the button')
     try:
         ToggleSwitch.deploy()
     except KeyboardInterrupt:
