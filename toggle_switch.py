@@ -5,8 +5,9 @@ __author__ = "Mohamed Eldesouki"
 __date__ = "28 Dec, 2021"
 __email__ = "pi@eldesouki.com"
 
-
+import sys
 import time
+import signal
 import RPi.GPIO as GPIO
 
 
@@ -33,13 +34,18 @@ class ToggleSwitch:
     def deploy(cls):
         print("\033[34mLED is OFF, press the button to switch it ON\033[0m")
         GPIO.add_event_detect(cls.button_pin, GPIO.FALLING, callback=cls.toggle_LED, bouncetime=300)
-        while True:
-            pass
+        signal.signal(signal.SIGINT, cls.destroy)
+        signal.pause()
 
     @classmethod
-    def destroy(cls):
+    def destroy(cls, sig, frame):
+        # signal handler
         GPIO.output(cls.led_pin, GPIO.LOW)
         GPIO.cleanup()
+        sys.exit(0)
+
+
+
 
 
 if __name__ == '__main__':
