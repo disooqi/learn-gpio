@@ -23,33 +23,18 @@ class ToggleSwitch:
         GPIO.setup(cls.button_pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
     @classmethod
-    def toggle_LED(cls):
+    def toggle_LED(cls, channel):
+        led_states = ['\033[31mLED turned OFF\033[0m', '\033[32mLED turned ON\033[0m']
         cls.led_current_state = not cls.led_current_state
         GPIO.output(cls.led_pin, cls.led_current_state)
+        print(led_states[cls.led_current_state], '- switch at channel', channel)
 
     @classmethod
     def deploy(cls):
-        # I know; 0 means ON, 1 means OFF (for the button)
-        led_states = ['\033[31mLED turned OFF\033[0m', '\033[32mLED turned ON\033[0m']
         print("\033[34mLED is OFF, press the button to switch it ON\033[0m")
-        still_pressed = False
-        count = 1
+        GPIO.add_event_detect(cls.button_pin, GPIO.FALLING, callback=cls.toggle_LED, bouncetime=300)
         while True:
-            time.sleep(0.01)
-            if GPIO.input(cls.button_pin) == GPIO.LOW:
-                if still_pressed:
-                    # this is added to solve the bounce problem
-                    # to eliminate the impact of buffeting.
-                    time.sleep(0.05)
-                    count += 1
-                    continue
-                cls.toggle_LED()
-                print(led_states[cls.led_current_state], count)
-                count = 0
-                still_pressed = True
-                #
-            else:
-                still_pressed = False
+            pass
 
     @staticmethod
     def destroy():
@@ -59,7 +44,7 @@ class ToggleSwitch:
 
 if __name__ == '__main__':
     ToggleSwitch.initialize()
-    print('System ready')
+    print('\033[44m\033[30m  System is ready  \033[0m')
     try:
         ToggleSwitch.deploy()
     except KeyboardInterrupt:
